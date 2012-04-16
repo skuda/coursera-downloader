@@ -126,17 +126,20 @@ def main():
 
     #we setup the logger
     log_filename = 'coursera_downloader.log'
-
     my_logger = logging.getLogger('Coursera_Downloader')
     my_logger.setLevel(logging.DEBUG)
 
-    if options.verbose:
-        # create console handler and set level to debug
-        ch = logging.StreamHandler()
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    ch.setFormatter(formatter)
+
+    if options.verbose: #if verbose we log to console at debug level.
         ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-        my_logger.addHandler(ch)
+    else:
+        ch.setLevel(logging.ERROR) #else only errors.
+
+    my_logger.addHandler(ch)
 
     handler = logging.handlers.RotatingFileHandler(log_filename, maxBytes=12000, backupCount=0)
     handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
