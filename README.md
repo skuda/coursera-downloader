@@ -18,7 +18,7 @@ Instructions for coursera_downloader.py
 * Course selected from command line.
 * Only download what's new, check the existence of files in the output folder before download them.
 * Select what to download from videos, subtitles, slides.
-* Select in what format do you want the subtitles and slides. 
+* Select in what format do you want the subtitles and slides.
 * Limits download speed.
 * Search for a concrete section in the selected course.
 * Log activity
@@ -70,7 +70,7 @@ Instructions for coursera_downloader.py
 
 ### Usage examples
 Download nlp class videos and subtitles in srt format to /tmp/nlp at a maximum rate of 250Kb/s using the default Chromium cookies in Linux.
-     
+
     ./coursera_downloader.py -c nlp -o /tmp/nlp -v -s -f srt -m 250000
 
 Download algo class slides in pdf format to /tmp/algo using cookies from Firefox in Linux without maximum rate.
@@ -88,3 +88,7 @@ Download all the content from ModelThinking to c:\temp\modelthinking class in Wi
 #####Why?
 * I think this videos are gold, i am doing all the courses that i can and i am storing the videos for future reference, last fall i did Machine Learning and databases and still any times i consult the videos i downloaded at the time.
 * I use chromium in Linux and i have not found a good way to rate-limit the download so when i am downloading content manually i am efectively consuming all my bandwith, i have used trickle other times or QoS but anyway i would have to manually download every link and rename to the lesson title every resource manually this is just better.
+
+### TODO
+* Add default paths for cookies, Firefox in Linux and Windows and Chrome in Windows.
+* Create an self-contained exe with Pyinstaller for Windows users.
