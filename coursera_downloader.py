@@ -46,7 +46,6 @@ last_dl_state = None
 
 def main():
     usage = "%prog [options]"
-    #we don't fix the course_list because it is growing continously
     course_list_examples = ("saas", "modelthinking", "algo", "nlp", "crypto", "pgm", "gametheory")
     sub_format_list = ("txt", "srt")
     slides_format_list = ("pptx", "ppt", "pdf")
@@ -62,6 +61,7 @@ def main():
     p_add_option("-x", "--verbose", action="store_true", dest="verbose", default=False,\
                  help="verbose print log messages to console, default: False")
 
+    #we don't fix the course_list because it is growing continously, but use the current tuple as examples.
     p_add_option("-c", "--course", dest="course",\
                  help=u"the course url path inside www.coursera.org examples: %s" % u", ".join(course_list_examples))
 
@@ -146,7 +146,8 @@ def main():
     my_logger.addHandler(handler)
 
     cookies_db_path = options.cookies_db_path
-    if sys.platform.startswith("win"): #we assume latin-1 encoding for now.
+    if sys.platform.startswith("win"):
+        #if we can't convert to unicode we assume it is in latin-1 for now
         try:
             cookies_db_path = unicode(options.cookies_db_path).encode("utf-8")
         except:
@@ -168,7 +169,7 @@ def main():
     #post cookie
     url_string = "https://class.coursera.org/%s/lecture/index" % options.course
 
-    #given that we permit user to put any text like course we check it exits.
+    #given that we permit the user to put any text like course we check it exits.
     try:
         my_logger.debug("Opening URL %s" % url_string)
         complete_html = urllib2.urlopen(url_string).read()
@@ -177,6 +178,7 @@ def main():
         return
 
     output_folder = options.output_folder
+
     #we create cookies.txt for libcurl
     try:
         my_logger.debug("Dumping cookies.txt to use from libcurl")
@@ -192,7 +194,7 @@ def main():
     down_slides = options.download_slides
 
     #subtitles format
-    sub_format = options.subtitles_format #used in loop
+    sub_format = options.subtitles_format
     rege = re.compile(r"format\=...")
     subt_replace = "format=%s" % sub_format
 
@@ -242,10 +244,11 @@ def main():
     #we cache this result to search for section folders just in case section_num it is not valid
     listdir_output = os.listdir(output_folder)
 
-    #regex for clean sections and titles from invalid chars, this all areinvalid chars on windows, given that
-    #i would like to make compatible the downloader for begin a download and windows and finish in linux for example
-    #i replace this chars in all platforms.
+    # regex for clean sections and titles from invalid chars, this chars are all invalid in windows paths, given that
+    # i would like to make compatible the downloader for begin a download and windows and finish in linux for example
+    # i replace this chars in all platforms.
     inv_path_re = re.compile(r'[:|?|*|<|>|"|\||/|\\]')
+
     #we use this dict for replacements.
     inv_path_dict = {':': "_",
                      '?': "",
@@ -259,6 +262,7 @@ def main():
                      '\n': ""}
 
     def clean_path(path):
+        """we use this function inside loop to clean path from invalid chars"""
         return inv_path_re.sub(lambda x: inv_path_dict[x.group()], path).strip()
 
     for section, section_title in izip(sections, sections_titles):
@@ -274,8 +278,8 @@ def main():
 
         lessons = lessons_xpath(section)
 
-        #for every lesson inside a section we begin an autonumeration to store the correct order
-        #i have not found any course modifying this one yet so i am not taking so much care with this one.
+        # for every lesson inside a section we begin an autonumeration to store the correct order
+        # i have not found any course modifying this one yet so i am not taking so much care with this.
         lesson_num = 0
         for lesson in lessons:
             lesson_num += 1
@@ -285,8 +289,8 @@ def main():
 
             section_dir = u"%s/%02d %s" % (output_folder, section_num, section_title)
 
-            #if not exists first we search for it ignoring enumeration and use the folder if found,
-            #otherwise we create it
+            # if not exists first we search for it ignoring enumeration and use the folder if found,
+            # otherwise we create it
             if not os.path.exists(section_dir):
                 folder_found = False
                 section_title_lower = section_title.lower()
@@ -349,7 +353,7 @@ def main():
                     #we clean the output folder to use in our messages to the user about the active file.
                     dl_state.internal_path = complete_path.replace((output_folder+"/"), "")
 
-                    global last_dl_state #needed for catch ctrl+c signal.
+                    global last_dl_state #needed to print the in-progress filename when catch ctrl+c signal.
                     last_dl_state = dl_state
 
                     download_resource(href, complete_path, max_bandwith, cookies_filename, my_logger,\
@@ -373,7 +377,7 @@ def curl_progress(disable_progressbar, dl_state, dl_total, dl_now, ul_total, ul_
     #if it is not the last update (for dl completed), we only print one every 0.3 seconds.
     if dl_total != dl_now and (cur_time - dl_state.prev_time) < 0.3:
         return
-    #just in case time has not enoguh accuracy
+    #just in case time has not enough accuracy
     elif cur_time == dl_state.prev_time:
         return
 
@@ -387,6 +391,8 @@ def curl_progress(disable_progressbar, dl_state, dl_total, dl_now, ul_total, ul_
     percent = 0.0
     if dl_total != 0.0:
         percent = float(dl_now) / float(dl_total) * 100.0
+    elif dl_now > 0.0: #any times the file it is so small that it gets downloaded completely before get dl_total value
+        percent = 100.0
 
     texto = u"\r[%s] %.2f%% downloaded %d/%d avg:%dKb/s cur:%dKb/s" %\
             ("#"*(int(percent)/10), percent, dl_now, dl_total, avg_speed, cur_speed)
@@ -398,10 +404,6 @@ def download_resource(url, filename, rate_limit, cookies_filename, my_logger, dl
     my_logger.debug("Downloading '%s' from '%s' ...\n" % (filename, url))
     print "Downloading '%s'" % dl_state.internal_path
 
-    #we update this here so we can know what file we are working on if we get stopped by signal.
-    global cur_internal_path
-    cur_internal_path = dl_state.internal_path
-
     curl = pycurl.Curl()
     curl.setopt(curl.URL, url)
 
@@ -411,8 +413,8 @@ def download_resource(url, filename, rate_limit, cookies_filename, my_logger, dl
     file_store = open(filename, "wb")
     curl.setopt(curl.WRITEDATA, file_store)
 
-    #we ever activate progress handling in libcurl to permits the usage of ctrl+c to abort
-    #our function curl_progress check that it is not disabled before print it.
+    # we ever activate progress handling in libcurl to permits the usage of ctrl+c to abort
+    # our function curl_progress check that it is not disabled before print it.
     curl.setopt(curl.NOPROGRESS, 0)
     curl.setopt(curl.PROGRESSFUNCTION, functools.partial(curl_progress, disable_progressbar, dl_state))
 
@@ -438,7 +440,7 @@ def download_resource(url, filename, rate_limit, cookies_filename, my_logger, dl
     #cleaning
     curl.close()
     file_store.close()
-    print "\n" #change line for progress
+    print "\n" #change line for progress messages
     return
 
 def sqlite_to_cookiejar(browser, filename):
