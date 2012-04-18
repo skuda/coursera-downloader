@@ -3,7 +3,7 @@
 
 I use this scripts to download and store online courses resources (videos, subtitles and slides), right now only supports Coursera but i plan to add Udacity ASAP.
 
-##Coursera
+##Coursera Downloader
 Instructions for coursera_downloader.py
 
 ### Requisites
