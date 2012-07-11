@@ -172,12 +172,12 @@ def main():
     #given that we permit the user to put any text like course we check it exits.
     try:
         my_logger.debug("Opening URL %s" % url_string)
-        complete_html = urllib2.urlopen(url_string).read()
+        complete_html = unicode(urllib2.urlopen(url_string).read(), u"utf-8")
     except:
         my_logger.error("Can't open %s, do the course name exists? did Coursera change the url format?" % url_string)
         return
 
-    output_folder = options.output_folder
+    output_folder = unicode(options.output_folder)
 
     #we create cookies.txt for libcurl
     try:
@@ -247,9 +247,9 @@ def main():
     # regex for clean sections and titles from invalid chars, this chars are all invalid in windows paths, given that
     # i would like to make compatible the downloader for begin a download and windows and finish in linux for example
     # i replace this chars in all platforms.
-    inv_path_re = re.compile(r'[:|?|*|<|>|"|\||/|\\]')
+    inv_path_re = re.compile(u'[:|?|*|<|>|"|\||/|\\|\n|\u2014]', re.U)
 
-    #we use this dict for replacements.
+    #we use this dict for replacements
     inv_path_dict = {':': "_",
                      '?': "",
                      '*': "",
@@ -259,7 +259,9 @@ def main():
                      '|': " ",
                      '/': "-",
                      '\\': "-",
-                     '\n': ""}
+                     '\n': "",
+                     u"\u2014": "-"
+                    }
 
     def clean_path(path):
         """we use this function inside loop to clean path from invalid chars"""
