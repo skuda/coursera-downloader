@@ -1,4 +1,4 @@
-#Online Universities Downloader scripts
+#Coursera Downloader utility
 ---
 
 I use this scripts to download and store coursera resources (videos, subtitles and slides).
