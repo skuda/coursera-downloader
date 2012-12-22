@@ -1,10 +1,7 @@
 #Online Universities Downloader scripts
 ---
 
-I use this scripts to download and store online courses resources (videos, subtitles and slides), right now only supports Coursera but i plan to add Udacity ASAP.
-
-##Coursera Downloader
-Instructions for coursera_downloader.py
+I use this scripts to download and store coursera resources (videos, subtitles and slides).
 
 ### Requisites
 * Python2 (2.5 or newer, tested on Python 2.7 but i think i don't use features not found in 2.5, have to try)
