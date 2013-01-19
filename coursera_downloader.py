@@ -210,14 +210,16 @@ def main():
         return
 
     try:
-        content = my_tree.xpath('//div[@class="item_list"]')[0]
+        content = my_tree.xpath('//div[@class="course-item-list"]')[0]
     except:
         my_logger.error("parsing error with the html videos page of the course while getting the content,"\
                         " maybe something have changed?")
         return
 
-    sections_titles = [section.text for section in content.xpath('//h3[@class="list_header"]')]
-    sections = content.xpath('./ul[@class="item_section_list"]')
+    #sections_titles = [section.text for section in content.xpath('//h3[@class="course-item-list-header"]')]
+    sections_titles = [section.text_content() for section in
+                       content.xpath('./div[contains(@class, "course-item-list-header")]/h3')]
+    sections = content.xpath('./ul[@class="course-item-list-section-list"]')
 
     if not sections_titles or not sections:
         my_logger.error("parsing error with the html videos page of the course while getting the sections,"\
@@ -229,8 +231,10 @@ def main():
     search_string_section = options.search_string_section.lower() if options.search_string_section else None
 
     #any compiled xpath used in loop
-    lessons_xpath = etree.XPath('./li[contains(@class, "item_row")]')
-    resources_xpath = etree.XPath('./div[@class="item_resource"]/a')
+    #lessons_xpath = etree.XPath('./li[contains(@class, "lecture-link")]')
+    #resources_xpath = etree.XPath('./div[@class="course-lecture-item-resource"]/a')
+    lessons_xpath = etree.XPath('./li/a[@class="lecture-link"]/..')
+    resources_xpath = etree.XPath('./div[@class="course-lecture-item-resource"]/a')
     section_title_xpath = etree.XPath("./a")
 
     # i know that use a section_num in loop like this it is not perfect, any teachers add sections at the beginning
