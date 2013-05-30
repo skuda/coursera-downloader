@@ -216,7 +216,6 @@ def main():
                         " maybe something have changed?")
         return
 
-    #sections_titles = [section.text for section in content.xpath('//h3[@class="course-item-list-header"]')]
     sections_titles = [section.text_content() for section in
                        content.xpath('./div[contains(@class, "course-item-list-header")]/h3')]
     sections = content.xpath('./ul[@class="course-item-list-section-list"]')
@@ -231,8 +230,6 @@ def main():
     search_string_section = options.search_string_section.lower() if options.search_string_section else None
 
     #any compiled xpath used in loop
-    #lessons_xpath = etree.XPath('./li[contains(@class, "lecture-link")]')
-    #resources_xpath = etree.XPath('./div[@class="course-lecture-item-resource"]/a')
     lessons_xpath = etree.XPath('./li/a[@class="lecture-link"]/..')
     resources_xpath = etree.XPath('./div[@class="course-lecture-item-resource"]/a')
     section_title_xpath = etree.XPath("./a")
@@ -374,18 +371,18 @@ def main():
 def curl_progress(disable_progressbar, dl_state, dl_total, dl_now, ul_total, ul_now):
     """callback assigned to pycurl download, showing progress (if not disabled)"""
     if disable_progressbar:
-        return
+        return 0
     #if the downloaded size did not change we don't update.
     elif dl_now == dl_state.dl_prev:
-        return
+        return 0
 
     cur_time = time_clock()
     #if it is not the last update (for dl completed), we only print one every 0.3 seconds.
     if dl_total != dl_now and (cur_time - dl_state.prev_time) < 0.3:
-        return
+        return 0
     #just in case time has not enough accuracy
     elif cur_time == dl_state.prev_time:
-        return
+        return 0
 
     avg_speed = dl_now / (cur_time - dl_state.start_time) / 1000.0
     cur_speed = (dl_now - dl_state.dl_prev) / (cur_time - dl_state.prev_time) / 1000.0
@@ -404,6 +401,7 @@ def curl_progress(disable_progressbar, dl_state, dl_total, dl_now, ul_total, ul_
             ("#"*(int(percent)/10), percent, dl_now, dl_total, avg_speed, cur_speed)
     sys.stdout.write(texto)
     sys.stdout.flush()
+    return 0
 
 def download_resource(url, filename, rate_limit, cookies_filename, my_logger, dl_state, disable_progressbar):
     """this function use pycurl to download the file"""
